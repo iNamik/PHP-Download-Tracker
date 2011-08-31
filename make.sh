@@ -25,11 +25,13 @@ fi
 
 mkdir $build_dir
 
-cp -r dl        $build_dir/
-cp -r log       $build_dir/
-cp    gpl.txt   $build_dir/
-cp    index.php $build_dir/
+cp -r dl          $build_dir/
+cp -r log         $build_dir/
+cp    gpl.txt     $build_dir/
+cp    index.php   $build_dir/
+cp    README.md   $build_dir/
+cp    VERSION.txt $build_dir/
 
 mkdir $dist_dir
 
-tar -zcf $dist_dir/$target.tar.gz $build_dir/
+tar -zcf $dist_dir/$target.tar.gz -C build $target/
