@@ -1,0 +1,33 @@
+iNamik PHP Download Tracker
+
+Version History
+===============
+
+Changes in v0.60.1
+
+	*	Project name changed to "PHP Download Tracker"
+
+	*	Project moved to GitHub
+
+	*	Added make.sh - A simple bash script to buld distributions
+
+	*	Added README.md
+
+	*	Added VERSION.txt
+
+Changes in v0.60.0
+
+	*	A few features were added to prevent crawlers from downloading files.
+
+	*	The first is file selection via radio buttons along with the submit button,
+		which should make it harder for crawlers to link to the files.
+
+	*	The second feature is a simple text-based CAPTCHA.
+
+	*	The last new feature is ability to display the file list in more of a "flat" display.
+
+	*	All these new features can be turned off to return to the behavior of the previous version
+
+Changes in v0.50.0
+
+	*	Initial Release of "Simple Download Tracker for PHP"
