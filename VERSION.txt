@@ -3,6 +3,18 @@ iNamik PHP Download Tracker
 Version History
 ===============
 
+Changes in v0.70.0
+
+	*	Fix Issue #1 - Validate requested file against crawled directory map used to generate initial list.
+	
+	*	Fix Issue #2 - Use double-quotes (") around download filename to accomodate filenames with spaces.
+	
+	*	Exclude empty directories from file list.
+	
+	*	Use '.' instead of '!' in error messages.
+	
+	*	Minor spacing changes
+
 Changes in v0.60.1
 
 	*	Project name changed to "PHP Download Tracker"

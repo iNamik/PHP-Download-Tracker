@@ -52,11 +52,12 @@
 
 	error_reporting(0);
 # Enable For debugging
-#error_reporting(E_ALL | E_STRICT);
-#ini_set('display_startup_errors', 1);
-#ini_set('display_errors', 1);
-## Helpful debug print statement
-##print __FILE__.':'.__LINE__.':'."<br/>\n";
+#	error_reporting(E_ALL | E_STRICT);
+#	ini_set('display_startup_errors', 1);
+#	ini_set('display_errors', 1);
+
+# Helpful debug print statement
+#print __FILE__.':'.__LINE__.":<br/>\n";
 
 #######################################################################
 # Config Section
@@ -66,7 +67,7 @@
 	$logDir      = './log';
 	$logRequest  = true;
 	$indentList  = false;
-	$useForm     = true;
+	$useForm     = true; // If false, generates links instead of radio buttons
 	$useCaptcha  = true; // Only usefull when $userForm = true
 
 #######################################################################
@@ -88,41 +89,56 @@
 	if (!isset($pathMap) || !is_array($pathMap) || empty($pathMap))
 	{
 		unset($pathMap);
-		$errorMessage = "No files found!";
+		$errorMessage = "No files found.";
 	}
 	else
 	{
-		if (isset($_GET['file']))
+		$file = array_key_exists('file', $_GET) ? trim($_GET['file']) : null;
+		if (!is_null($file) && strlen($file) > 0)
 		{
-			$file = $_GET['file'];
-
-			if	(
-					(
-						!(preg_match('/^\./i', $file)) # Should not start with '.'
-					&&	!(preg_match('/^\//i', $file)) # Should not start with '/'
-					)
-				&&	!(preg_match('/^#/i', basename($file))) # Should not start with '#' ?
-				&&	 (file_exists($downloadDir . '/' . $file))
-				)
+			$map = $pathMap;
+			$dir = dirname($file); // Returns '.' if no directory component
+			if ($dir != '.')
 			{
-				if (!$useCaptcha || verifyCaptcha())
+				$dirs = explode('/', $dir);
+				foreach ($dirs as $dir)
 				{
-					logRequest($file);
-					header('Content-Description: File Transfer');
-					header('Content-Type: application/forced-download');
-					header('Content-Length: ' . filesize($downloadDir . '/' . $file));
-					header('Content-Disposition: attachment; filename=' . basename($downloadDir . '/' . $file));
-					readfileChunked($downloadDir . '/' . $file);
-					exit;
+					if (isset($map[$dir]) && is_array($map[$dir]))
+					{
+						$map = $map[$dir];
+					}
+					else
+					{
+						$errorMessage = "The specified file does not exist.";
+						break;
+					}
+				}
+			}
+			if (!isset($errorMessage))
+			{
+				$base = basename($file);
+				$dl   = ($downloadDir . '/' . $file);
+				if (isset($map[$base]) && is_string($map[$base]) && file_exists($dl))
+				{
+					if (!$useCaptcha || verifyCaptcha())
+					{
+						logRequest($file);
+						header('Content-Description: File Transfer');
+						header('Content-Type: application/forced-download');
+						header('Content-Length: ' . filesize($dl));
+						header('Content-Disposition: attachment; filename="' . $base . '"');
+						readfileChunked($dl);
+						exit;
+					}
+					else
+					{
+						$errorMessage = "Please enter the access code.";
+					}
 				}
 				else
 				{
-					$errorMessage = "Please enter the access code.";
+					$errorMessage = "The specified file does not exist.";
 				}
-			}
-			else
-			{
-				$errorMessage = "The specified file does not exist!";
 			}
 		}
 		else
@@ -312,30 +328,31 @@
 			return $pathMap;
 		}
 
-		$dirhandle = opendir($dir);
+		$dirHandle = opendir($dir);
 
 		$subDirList = array();
 		$fileList   = array();
 
-		while ($f = readdir($dirhandle))
+		while ($f = readdir($dirHandle)) // Assignment in condition
 		{
 			if	(
 					!(preg_match('/^\./', $f))
-				&&  !(preg_match('/^#/',$f))
+				&&	!(preg_match('/^#/' , $f)) // @TODO Not sure this is necessary
 				)
 			{
-				if( (is_dir($dir . '/' . $f)) )
+				if (is_dir($dir . '/' . $f))
 				{
 					array_push($subDirList, $f);
 				}
-				elseif( file_exists($dir . '/' . $f) )
+				else
+				if (file_exists($dir . '/' . $f))
 				{
 					array_push($fileList, $f);
 				}
 			}
 		}
 
-		closedir($dirhandle);
+		closedir($dirHandle);
 
 		natcasesort($fileList);
 
@@ -346,11 +363,11 @@
 
 		natcasesort($subDirList);
 
-		foreach($subDirList as $f)
+		foreach ($subDirList as $f)
 		{
 			$tmp = readDownloadDir($subDir . '/' . $f, $count++);
 
-			if(is_array($tmp))
+			if (is_array($tmp) && !empty($tmp))
 			{
 				$pathMap[$f] = $tmp;
 			}
